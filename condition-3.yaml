@@ -1,0 +1,71 @@
+blueprint:
+  name: Motion-Activated Light Switch cindition
+  description: Turn on a light switch when motion is detected and turn it off when no motion is detected for a specified amount of time.
+  domain: automation
+  input:
+    motion_sensor:
+      name: Motion Sensor
+      description: The motion sensor that will trigger the light switch.
+      selector:
+        entity:
+          domain: binary_sensor
+    light_switch:
+      name: Light Switch
+      description: The light switch that will be controlled by the motion sensor.
+      selector:
+        entity:
+          domain: switch
+    delay_minutes:
+      name: Delay (minutes)
+      description: The number of minutes to wait after the last detected motion before turning off the light.
+      default: 1
+      selector:
+        number:
+          min: 1
+          max: 60
+          step: 1
+  source_url: https://www.example.com/motion-activated-light-switch.yaml
+
+mode: restart
+
+trigger:
+  platform: state
+  entity_id: !input motion_sensor
+  to: 'on'
+
+action:
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: !input light_switch
+            state: 'off'
+        sequence:
+          - service: switch.turn_on
+            target:
+              entity_id: !input light_switch
+      - conditions:
+          - condition: state
+            entity_id: !input light_switch
+            state: 'on'
+        sequence:
+          - service: homeassistant.turn_on
+            target:
+              entity_id: !input motion_sensor
+
+  - alias: 'Turn off light when no motion detected'
+    trigger:
+      platform: state
+      entity_id: !input motion_sensor
+      to: 'off'
+      for:
+        minutes: !input delay_minutes
+    condition:
+      condition: and
+      conditions:
+        - condition: state
+          entity_id: !input light_switch
+          state: 'on'
+    action:
+      - service: switch.turn_off
+        target:
+          entity_id: !input light_switch
