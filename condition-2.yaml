@@ -1,5 +1,5 @@
 blueprint:
-  name: Motion-Activated Light Switch
+  name: Motion-Activated Light Switch except 
   description: Turn on a light switch when motion is detected and turn it off when no motion is detected for a specified amount of time.
   domain: automation
   input:
@@ -15,16 +15,16 @@ blueprint:
       selector:
         entity:
           domain: switch
-    delay_minutes:
-      name: Delay (minutes)
-      description: The number of minutes to wait after the last detected motion before turning off the light.
-      default: 1
+    delay_seconds:
+      name: Delay (secods)
+      description: The number of seconds to wait after the last detected motion before turning off the light.
+      default: 30
       selector:
         number:
-          min: 1
-          max: 60
-          step: 1
-  source_url: https://www.example.com/motion-activated-light-switch.yaml
+          min: 0
+          max: 600
+          step: 5
+  source_url: https://github.com/p-borat/ha_1/edit/main/condition-2.yaml
 
 mode: restart
 
@@ -58,7 +58,7 @@ action:
       entity_id: !input motion_sensor
       to: 'off'
       for:
-        minutes: !input delay_minutes
+        seconds: !input delay_seconds
     condition:
       - condition: state
         entity_id: !input light_switch
